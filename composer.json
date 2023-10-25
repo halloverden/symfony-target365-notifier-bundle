@@ -1,0 +1,23 @@
+{
+    "name": "halloverden/target365-notifier-bundle",
+    "description": "Target365 (Strex) SMS transport for Symfony notifier",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "HalloVerden\\Target365NotifierBundle\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Tom Roar Furunes",
+            "email": "tom.roar@halloverden.no"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.2",
+        "symfony/framework-bundle": "^6.3"
+    }
+}
