@@ -25,6 +25,12 @@ use Target365\ApiSdk\Model\Properties;
 final class Target365Transport extends AbstractTransport {
   protected const HOST = 'shared.target365.io';
 
+  private const FAKE_PHONE_NUMBERS = [
+    '+4700000001', // Ok - Delivered
+    '+4700000010', // Failed - Undelivered
+    '+4700000020', // Failed - SubscriberBarred
+  ];
+
   private ApiClient $apiClient;
 
   /**
@@ -36,6 +42,7 @@ final class Target365Transport extends AbstractTransport {
     string $privateKey,
     private readonly string $from = '',
     private readonly bool $allowUnicode = false,
+    private readonly bool $allowFakePhoneNumbers = false,
     ?string $host = null,
     ?string $port = null,
     ?LoggerInterface $logger = null,
@@ -61,25 +68,13 @@ final class Target365Transport extends AbstractTransport {
       throw new LogicException(\sprintf('options passed to "%s", must be instance of "%s"', __CLASS__, Target365Options::class));
     }
 
-    $phoneNumberUtil = PhoneNumberUtil::getInstance();
-
-    try {
-      $phoneNumber = $phoneNumberUtil->parse($message->getPhone());
-    } catch (NumberParseException $e) {
-      throw new InvalidArgumentException(\sprintf('Unable to parse phone number (%s)', $message->getPhone()), previous: $e);
-    }
-
-    if (!$phoneNumberUtil->isValidNumber($phoneNumber)) {
-      throw new InvalidArgumentException(\sprintf('The phone number (%s) is not valid', $message->getPhone()));
-    }
-
     $from = $message->getFrom() ?: $this->from;
 
     $outMessage = (new OutMessage())
       ->setTransactionId($options->getTransactionIdPrefix() ? $options->getTransactionIdPrefix() . microtime(true) : uniqid((string) time(), true))
       ->setAllowUnicode($this->allowUnicode)
       ->setSender($from)
-      ->setRecipient($phoneNumberUtil->format($phoneNumber, PhoneNumberFormat::E164))
+      ->setRecipient($this->getFormattedPhoneNumber($message))
       ->setContent($message->getSubject())
       ->setTags($options->getTags());
 
@@ -99,7 +94,39 @@ final class Target365Transport extends AbstractTransport {
   }
 
   public function __toString(): string {
-    return \sprintf('%s://%s?from=%s&allowUnicode=%s', Target365TransportFactory::SCHEME, $this->getEndpoint(), \urlencode($this->from), $this->allowUnicode ? 'true' : 'false');
+    return \sprintf(
+      '%s://%s?from=%s&allowUnicode=%s&allowFakePhoneNumbers=%s',
+      Target365TransportFactory::SCHEME,
+      $this->getEndpoint(),
+      \urlencode($this->from),
+      $this->allowUnicode ? 'true' : 'false',
+      $this->allowFakePhoneNumbers ? 'true' : 'false',
+    );
+  }
+
+  /**
+   * @param SmsMessage $message
+   *
+   * @return string
+   */
+  private function getFormattedPhoneNumber(SmsMessage $message): string {
+    if ($this->allowFakePhoneNumbers && \in_array($message->getPhone(), self::FAKE_PHONE_NUMBERS, true)) {
+      return $message->getPhone();
+    }
+
+    $phoneNumberUtil = PhoneNumberUtil::getInstance();
+
+    try {
+      $phoneNumber = $phoneNumberUtil->parse($message->getPhone());
+    } catch (NumberParseException $e) {
+      throw new InvalidArgumentException(\sprintf('Unable to parse phone number (%s)', $message->getPhone()), previous: $e);
+    }
+
+    if (!$phoneNumberUtil->isValidNumber($phoneNumber)) {
+      throw new InvalidArgumentException(\sprintf('The phone number (%s) is not valid', $message->getPhone()));
+    }
+
+    return $phoneNumberUtil->format($phoneNumber, PhoneNumberFormat::E164);
   }
 
 }

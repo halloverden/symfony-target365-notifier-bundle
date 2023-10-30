@@ -44,10 +44,11 @@ final class Target365TransportFactory extends AbstractTransportFactory {
     $privateKey = $this->getPassword($dsn);
     $from = $dsn->getOption('from', '');
     $allowUnicode = $dsn->getOption('allowUnicode') === 'true';
+    $allowFakePhoneNumbers = $dsn->getOption('allowFakePhoneNumbers') === 'true';
     $host = 'default' === $dsn->getHost() ? null : $dsn->getHost();
     $port = $dsn->getPort();
 
-    return new Target365Transport($keyName, $privateKey, $from, $allowUnicode, $host, $port, $this->logger, $this->client, $this->dispatcher);
+    return new Target365Transport($keyName, $privateKey, $from, $allowUnicode, $allowFakePhoneNumbers, $host, $port, $this->logger, $this->client, $this->dispatcher);
   }
 
 }
