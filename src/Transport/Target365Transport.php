@@ -47,7 +47,7 @@ final class Target365Transport extends AbstractTransport {
     ?string $port = null,
     ?LoggerInterface $logger = null,
     ?HttpClientInterface $client = null,
-    EventDispatcherInterface $dispatcher = null
+    ?EventDispatcherInterface $dispatcher = null
   ) {
     parent::__construct($client, $dispatcher);
     $this->setHost($host)->setPort($port);

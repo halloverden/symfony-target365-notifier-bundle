@@ -15,8 +15,8 @@ final class Target365TransportFactory extends AbstractTransportFactory {
   public const SCHEME = 'target365';
 
   public function __construct(
-    EventDispatcherInterface $dispatcher = null,
-    HttpClientInterface $client = null,
+    ?EventDispatcherInterface $dispatcher = null,
+    ?HttpClientInterface $client = null,
     private readonly ?LoggerInterface $logger = null
   ) {
     parent::__construct($dispatcher, $client);
