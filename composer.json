@@ -18,8 +18,8 @@
     "prefer-stable": true,
     "require": {
         "php": ">=8.2",
-        "symfony/framework-bundle": "^6.3",
-        "symfony/notifier": "^6.3",
+        "symfony/framework-bundle": "^6.4|^7.2",
+        "symfony/notifier": "^6.4|^7.2",
         "giggsey/libphonenumber-for-php": "^8.13",
         "target365/sdk": "^1.8"
     },
